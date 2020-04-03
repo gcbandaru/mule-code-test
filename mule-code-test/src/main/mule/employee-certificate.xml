@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="matching-id" doc:id="dca42c87-3f63-4e9d-b41d-8b2f1553e65a" >
+		<scheduler doc:name="Scheduler" doc:id="a1534b07-19fa-4deb-861e-653bcae9ce45" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="5" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<ee:transform doc:name="employee_scoreboard" doc:id="18f3ef9c-0b55-4292-9050-7c317a1897aa" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="scoreBoard" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "scoreBoard":[
+      {
+         "id":"A007",
+         "subjects":[
+            "Maths",
+            "English",
+            "Arts",
+            "Drawimgs"
+         ],
+         "score":[
+            80,
+            75,
+            89,
+            100
+         ]
+      },
+      {
+         "id":"A008",
+         "subjects":[
+            "Maths",
+            "English",
+            "Arts",
+            "Drawimgs"
+         ],
+         "score":[
+            70,
+            85,
+            69,
+            90
+         ]
+      },
+      {
+         "id":" A021",
+         "subjects":[
+            "Maths",
+            "English",
+            "Arts",
+            "Drawimgs"
+         ],
+         "score":[
+            90,
+            87,
+            77,
+            95
+         ]
+      }
+   ]
+}]]></ee:set-variable>
+				<ee:set-variable variableName="employee" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "employee":[
+      {
+         "id":"A007",
+         "first_name":"Jan",
+         "last_name":"Doe"
+      },
+      {
+         "id":"A008",
+         "first_name":"Ron",
+         "l ast_name":"David"
+      },
+      {
+         "id":"A009",
+         "first_name":"Jane",
+         "last_name":"Kane"
+      },
+      {
+         "id":"A010",
+         "first_name":"Marsh",
+         "last_name":"Megan"
+      },
+      {
+         "id":"A011",
+         "first_name":"Kelly",
+         "last_name":"Mitch"
+      },
+      {
+         "id":"A012",
+         "first_name":"Chris",
+         "last_name":"Vaste"
+      }
+   ]
+}]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="certificateJson" doc:id="ef38db87-2d80-4037-ab56-49c3e9169725">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "certificate": (vars.employee.employee map (item,indexOfItem) ->
+    {
+      "id": item.id,
+      "firstName": item.first_name,
+      "LastName": item.last_name,
+      "MarksBySubjectWise": using (marks = (vars.scoreBoard.scoreBoard filter (value, index) -> (value.id == item.id))[0].score){
+        "Maths": marks[0],
+        "English": marks[1],
+        "Arts": marks[2],
+        "Drawings": marks[3]
+      }
+    }) filter ($.MarksBySubjectWise.Maths != null)
+ 
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Certificate Json" doc:id="025df9ee-e492-4476-aa46-2a7b9f08a245" message="Employee Certificate :: #[payload]"/>
+		<flow-ref doc:name="corresponding-response" doc:id="c55231eb-8b5c-4934-83d1-5ca56a437397" name="corresponding-response"/>
+	
+</flow>
+	<sub-flow name="corresponding-response" doc:id="ca86cc09-9d9b-42ff-981c-9746351b7bc5" >
+		<ee:transform doc:name="certWithNoScoreboard" doc:id="c006e009-4173-4c5f-8d36-fe20dfd0c78f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "certificate": (vars.employee.employee map (item,indexOfItem) ->
+    {
+      "id": item.id,
+      "firstName": item.first_name,
+      "LastName": item.last_name,
+      "MarksBySubjectWise": using (marks = (vars.scoreBoard.scoreBoard filter (value, index) -> (value.id == item.id))[0].score){
+        "Maths": marks[0] default "Score Not Available",
+        "English": marks[1] default "Score Not Available",
+        "Arts": marks[2] default "Score Not Available",
+        "Drawings": marks[3] default "Score Not Available"
+      }
+    }) filter ($.MarksBySubjectWise.Maths == "Score Not Available")
+ 
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Corresponding records" doc:id="47b0459f-38cf-403a-b2a3-cd015be4005f" message="Corresponding records :: #[payload]"/>
+	</sub-flow>
+	
+</mule>

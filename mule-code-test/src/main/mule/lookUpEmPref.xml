@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="LookUpFlow" doc:id="a8c998c3-3e4d-4593-b8a2-49b76fec58dd" >
+		<ee:transform doc:name="Capturing Response Payload" doc:id="e11e59e7-84a0-4bf6-a8b3-40c76ed9d395" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.employee.first_name default "First Name Not Provided" ++ " " ++ payload.employee.last_name default "Last Name Not Provided"  ++  " employee profile is created in HRMS System"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+201]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log Payload" doc:id="a963f608-d76e-4a36-979d-f7fe618d0143" message="LookUp Flow Payload Log :: #[payload]"/>
+	</flow>
+</mule>

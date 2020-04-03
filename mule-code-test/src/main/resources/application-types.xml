@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="score" format="json">
+      <types:shape format="weave" example="examples/score.json"><![CDATA[%dw 2.0
+
+type score = {|
+  scoreBoard: Array<{|    id: String,     subjects: Array<String>, 
+    score: Array<Number {"typeId": "int"}>
+  |}>
+|} {"example": "{\\\"scoreBoard\\\":[{\\\"id\\\":\\\"A007\\\",\\\"subjects\\\":[\\\"Maths\\\",\\\"English\\\",\\\"Arts\\\",\\\"Drawimgs\\\"],\\\"score\\\":[80,75,89,100]},{\\\"id\\\":\\\"A008\\\",\\\"subjects\\\":[\\\"Maths\\\",\\\"English\\\",\\\"Arts\\\",\\\"Drawimgs\\\"],\\\"score\\\":[70,85,69,90]},{\\\"id\\\":\\\" A021\\\",\\\"subjects\\\":[\\\"Maths\\\",\\\"English\\\",\\\"Arts\\\",\\\"Drawimgs\\\"],\\\"score\\\":[90,87,77,95]}]}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#3738f23f-2977-4346-9034-bd4ce2a8295c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="scoreBoard" type="score"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

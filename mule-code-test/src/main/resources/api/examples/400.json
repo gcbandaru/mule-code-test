@@ -1,0 +1,8 @@
+{
+    "status": "failure",
+    "error": {
+        "errorCode": "400",
+        "errorType": "Bad Request",
+        "errorMessage": "Bad Request received from source"
+    }
+}
